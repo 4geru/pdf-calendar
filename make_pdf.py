@@ -142,6 +142,9 @@ def set_info(filename):
   pdf_canvas = canvas.Canvas("./calendar/{0}.pdf".format(filename), bottomup=False, pagesize=letter)  # 原点は左上
       
   pdf_canvas.setAuthor("4geru")
+  pdf_canvas.setTitle(filename)
+  pdf_canvas.setSubject(filename + 'のカレンダー')
+
   return pdf_canvas
 
 if __name__ == '__main__':
