@@ -8,6 +8,7 @@ from datetime import date, timedelta
 from urllib.request import urlopen
 from PIL import Image
 import reportlab.lib.colors as color
+import jcal
 import sys
 import io
 
@@ -71,19 +72,43 @@ def print_title(pdf_canvas, year, month):
   pdf_canvas.setFont(font, 20)
   pdf_canvas.drawString(config.space, config.title.height, "{0}年 {1}月のカレンダー".format(year, month))
 
-def diff_month_color(weekday):
+def diff_month_color(day):
   #ffcdd2 red lighten-4
-  if weekday == 0: return color.HexColor("0xffcdd2")
-  #bbdefb blue lighten-4    
-  if weekday == 6: return color.HexColor("0xbbdefb")
+  if day.weekday() == 6: return color.HexColor("0xffcdd2")
+  #bbdefb blue lighten-4 
+  if day.weekday() == 5: return color.HexColor("0xbbdefb")
+  # holiday #ef5350 red lighten-1
+  if day in jcal.holiday(day.year): return color.HexColor("0xffcdd2")
+  # transfer holiday on monday #ffcdd2 red lighten-4
+  if (  day - timedelta(days=2) in jcal.holiday(day.year) or \
+        day - timedelta(days=1) in jcal.holiday(day.year) ) and \
+      day.weekday() == 0:
+    return color.HexColor("0xffcdd2")
+  # transfer holiday on tuesday #ffcdd2 red lighten-4
+  if  day - timedelta(days=2) in jcal.holiday(day.year) and \
+      day - timedelta(days=1) in jcal.holiday(day.year) and \
+      day.weekday() == 1:
+    return color.HexColor("0xffcdd2")
   #cfd8dc blue-grey lighten-4
   return color.HexColor("0xcfd8dc")   
 
-def same_month_color(weekday):
-  #ef5350 red lighten-1
-  if weekday == 0: return color.HexColor("0xef5350")
-  #42a5f5 blue lighten-1 
-  if weekday == 6: return color.HexColor("0x42a5f5")
+def same_month_color(day):
+  # sunday #ef5350 red lighten-1
+  if day.weekday() == 6: return color.HexColor("0xef5350")
+  # saturday #42a5f5 blue lighten-1 
+  if day.weekday() == 5: return color.HexColor("0x42a5f5")
+  # holiday #ef5350 red lighten-1
+  if day in jcal.holiday(day.year): return color.HexColor("0xef5350")
+  # transfer holiday on monday #ef5350 red lighten-1
+  if (  day - timedelta(days=2) in jcal.holiday(day.year) or \
+        day - timedelta(days=1) in jcal.holiday(day.year) ) and \
+      day.weekday() == 0:
+    return color.HexColor("0xef5350")
+  # transfer holiday on tuesday #ef5350 red lighten-1
+  if  day - timedelta(days=2) in jcal.holiday(day.year) and \
+      day - timedelta(days=1) in jcal.holiday(day.year) and \
+      day.weekday() == 1:
+    return color.HexColor("0xef5350")
   return color.black
 
 # カレンダーの日付を表示
@@ -101,9 +126,9 @@ def print_word(pdf_canvas, year, month):
   for i in range(0,5):
     for j in range(0,7):
       if month == calendar[i][j].month:
-        pdf_canvas.setFillColor(same_month_color(j))
+        pdf_canvas.setFillColor(same_month_color(calendar[i][j]))
       else:
-        pdf_canvas.setFillColor(diff_month_color(j)) 
+        pdf_canvas.setFillColor(diff_month_color(calendar[i][j])) 
       pdf_canvas.drawString(j*step + left, i*step + top, str(calendar[i][j].day))
 
 # カレンダーの線の表示

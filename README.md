@@ -15,7 +15,8 @@ pythonでpdf形式のカレンダーを作成する。
 
 ## 環境構築
 ```
- $ pip3 install reportlab
+ $ pip3 install reportlab # pdfを表示するライブラリ
+ $ pip3 install jcal # 祝日を表示するライブラリ
  $ git clone https://github.com/4geru/pdf-calendar.git
  $ python3 make_pdf.py 2018 1 image_path
 ```
